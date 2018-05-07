@@ -18,10 +18,14 @@ public class Rewrite {
         
         String ifcFilename = "/Users/henriklange/Desktop/School/SE10/IFC Files/testbuildings//Paolo.ifc";
         String ifcFile = readFile(ifcFilename, StandardCharsets.UTF_8);
-        IFCReader ifcReader = new IFCReader();
         
-        ifcReader.parseIfc(ifcFile);
-        String turtle = ifcReader.writeBrick();
+        IFCFactory ifcFactory = new IFCFactory();
+        
+        EntityCollection entityCollection = ifcFactory.parseIfc(ifcFile);
+        
+        BrickFactory brickFactory = new BrickFactory();
+        String turtle = brickFactory.writeBrick(entityCollection);
+        turtle = brickFactory.addPrefixes(turtle);
         
         String turtleFilename = ifcFilename.substring(0, ifcFilename.lastIndexOf(".")) + ".ttl";
 
