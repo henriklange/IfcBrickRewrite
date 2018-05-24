@@ -1,24 +1,25 @@
 package rewrite;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Random;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import java.lang.reflect.Method;
+
 /**
- *
  * @author henriklange
+ * 
+ * Finds Brick-compatible data in IFC files
+ * and stores it in an EntityCollection.
+ * 
  */
 public class IFCFactory {
     
     String line = null;
+    IFCEntityFactory ifcEntityFactory = new IFCEntityFactory();
     
-    public EntityCollection parseIfc(String file){
+    public EntityCollection parseIfc(String file) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException{
         
         file = extractData(file);
         file = removeLineBreaks(file);
@@ -80,7 +81,7 @@ public class IFCFactory {
     /**
      * Populates an Entity Collection with the content of ifc lines.
      */
-    public EntityCollection interpretLines(String[] lines, EntityCollection entityCollection){
+    public EntityCollection interpretLines(String[] lines, EntityCollection entityCollection) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException{
         try{
             
             for (String line : lines) {
@@ -89,87 +90,8 @@ public class IFCFactory {
                 
                     int id = findId(line);
                     String definition = findDefinition(line);
-                    //int id = Integer.parseInt(line.substring(line.indexOf("#") + 1, line.indexOf("=")).trim());
-
-                    //String definition = line.substring(line.indexOf("I"), line.indexOf("("));
-                    //System.out.println(id + " : " + definition);
-                   
-                    switch(definition){
-                        case "ifcbuilding" :
-                            entityCollection.buildings.put(id, "building" + id);
-                        break;
-                        case "ifcroof" :
-                            entityCollection.roofs.put(id, "roof" + id);
-                        break;
-                        case "ifcgroup" :
-                            entityCollection.zones.put(id, "zone" + id);
-                        break;
-                        case "ifczone" :
-                            entityCollection.zones.put(id, "zone" + id);
-                        break;
-                        
-                        case "ifcbuildingstorey" : 
-                            // #id= ifcbuildingstorey('string',$,'STRING' ...);
-                            entityCollection.floors.put(id, line
-                                                    .split("'")[3]
-                                                    .replace(" ", "_")
-                                                    .replace(":", "_"));
-                        break;
-                        
-                        case "ifcspace" : 
-                            //#id= ifcspace('string',#id,'1',$,$,#id,#id,'NAME',.ELEMENT.,.INTERNAL.,$);
-                            String name = "";
-                            String[] strings = line.split("'");
-                            if(strings.length >= 6){
-                                name = strings[5] + strings[3];
-                            } else {
-                                name = strings[3];
-                            }
-                            
-                            entityCollection.rooms.put(id, name
-                                                    .replace(" ", "_")
-                                                    .replace(":", "_"));
-                            ;
-                        break;
-                        
-                        case "ifcrelaggregates" : 
-                            //#id= ifcrelaggrecates('string', #id,$,$,#ID,(ENTITYCOLLECTION)...);
-                            //System.out.println(line);
-                            ArrayList<Integer> entities = new ArrayList();
-                            String contentCollection = line
-                                    .split("\\(")[2];
-                            contentCollection = contentCollection.substring(0, contentCollection.indexOf(")"));
-                            
-                            for(String eid : contentCollection.split(",")){
-                                entities.add(Integer.parseInt(eid.replace("#", "")));
-                            }
-                            
-                            entityCollection.relaggregates.put(Integer.parseInt(line.split(",")[4].replace("#", "")), entities);
-                        break;
-                        
-                        case "ifcrelassignstogroup" :
-                            //#269553= IFCRELASSIGNSTOGROUP('06B2afrsv0uBHvTl1DaaCm',
-                            //#41,$,$,(#1666,#1700,#1759,#1784,#1822,#1856,#2198,#2264,#2328),$,#269552);
-                            ArrayList<Integer> _entities = new ArrayList();
-                            
-                            String _contentCollection = line
-                                    .split("\\(")[2];
-                            _contentCollection = _contentCollection.substring(0, _contentCollection.indexOf(")"));
-                            
-                            //System.out.println(_entityCollection);
-                            for(String eid : _contentCollection.split(",")){
-                                _entities.add(Integer.parseInt(eid.replace("#", "")));
-                            }
-                            
-                            String gid = line.substring(line.lastIndexOf("#") + 1);
-                            
-                            entityCollection.relAssignsToGroups.put(Integer.parseInt(gid), _entities);
-                        ;
-                        break;
-                        
-                        default:  /* nothing happens if the definition is irrelevant */ ;
-                        
-                    }
+                    
+                    entityCollection = ifcEntityFactory.dispatch(id, definition, line, entityCollection);
                     
                 }
             }

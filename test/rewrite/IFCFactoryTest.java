@@ -1,5 +1,6 @@
 package rewrite;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import static jdk.nashorn.internal.objects.Global.instance;
 import org.junit.Test;
@@ -20,7 +21,7 @@ public class IFCFactoryTest {
      * Turns ifc file content into entityCollection
      */
     @Test
-    public void testParseIfc() {
+    public void testParseIfc() throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         System.out.println("parseIfc");
         
         String file = "DATA;\r\n#23=ifcroof();\nENDSEC;";
@@ -136,7 +137,7 @@ public class IFCFactoryTest {
      * populates entityCollection with content of ifc file lines
      */
     @Test
-    public void testInterpretLines() {
+    public void testInterpretLines() throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         System.out.println("interpretLines");
         String[] lines = {"#1=ifcroof()", "#5451=ifcbuilding();", "#48691=ifczone();"};
         

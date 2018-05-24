@@ -1,12 +1,15 @@
 package rewrite;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Scanner;
 
 /**
  *
@@ -14,25 +17,45 @@ import java.nio.file.Paths;
  */
 public class Rewrite {
 
-    public static void main(String[] args) {
+    public static String ifcFilename;
+    
+    public static void main(String[] args) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         
-        String ifcFilename = "/Users/henriklange/Desktop/School/SE10/IFC Files/testbuildings//Paolo.ifc";
-        String ifcFile = readFile(ifcFilename, StandardCharsets.UTF_8);
+        int loops = 1;
+        //From Java Platform Performance: Strategies and Tactics"
+        long startTime = System.currentTimeMillis();
         
-        IFCFactory ifcFactory = new IFCFactory();
+        if(args.length == 0){
+            ifcFilename = "/Users/henriklange/Desktop/School/SE10/IFCFiles/SDU_OU44/SDU OU44_C07.2_NV.ifc";
+        } else {
+            ifcFilename = args[0];
+        }
         
-        EntityCollection entityCollection = ifcFactory.parseIfc(ifcFile);
-        
-        BrickFactory brickFactory = new BrickFactory();
-        String turtle = brickFactory.writeBrick(entityCollection);
-        turtle = brickFactory.addPrefixes(turtle);
-        
-        String turtleFilename = ifcFilename.substring(0, ifcFilename.lastIndexOf(".")) + ".ttl";
+        File file = new File(ifcFilename);
+        if(file.exists() && !file.isDirectory()) { 
 
-        try (PrintWriter out = new PrintWriter(turtleFilename)) {
-            out.print(turtle);
-        } catch (FileNotFoundException ex){
-            System.err.println(ex);
+            
+            String ifcFile = readFile(ifcFilename, StandardCharsets.UTF_8);
+
+            EntityCollection entityCollection = new IFCFactory().parseIfc(ifcFile);
+
+            String turtleData = new BrickFactory().writeBrick(entityCollection);
+
+            String turtleFilename = ifcFilename.substring(0, ifcFilename.lastIndexOf(".")) + ".ttl";
+
+            writeFile(turtleFilename, turtleData);
+            
+            long stopTime = System.currentTimeMillis();
+            long elapsedTime = stopTime - startTime;
+            System.out.println("translated in " + elapsedTime + " ms");
+            
+        } else {
+            System.err.println("File not found: '" + ifcFilename + "'");
+        }
+        if(true){
+        //if(args.length == 3 && args[2].equals("halt")){
+            Scanner scanner = new Scanner(System.in);
+            scanner.nextLine();
         }
         
     }
@@ -44,6 +67,14 @@ public class Rewrite {
         } catch(IOException e){
             System.err.println(e);
             return null;
+        }
+    }
+    
+    public static void writeFile(String turtleFilename, String turtleData){
+        try (PrintWriter out = new PrintWriter(turtleFilename)) {
+            out.print(turtleData);
+        } catch (FileNotFoundException ex){
+            System.err.println(ex);
         }
     }
 }
