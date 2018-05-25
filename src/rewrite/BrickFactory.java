@@ -1,5 +1,7 @@
 package rewrite;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 
 /**
@@ -121,14 +123,18 @@ public class BrickFactory {
      * Writes a Brick compatible Turtle string
      * from the contents of an entity collection.
      */
-    public String writeBrick(EntityCollection entityCollection){
+    public String writeBrick(EntityCollection entityCollection) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
         
         String turtle = writePrefixes();
-        turtle += writeBuildings(entityCollection);
-        turtle += writeFloors(entityCollection);
-        turtle += writeZones(entityCollection);
-        turtle += writeRooms(entityCollection);
-        turtle += writeRoofs(entityCollection);
+        
+        Method[] methods = this.getClass().getMethods();
+        for (Method method : methods) {
+            if (        method.getName().startsWith("write")
+                    && !method.getName().equals("writeBrick") 
+                    && !method.getName().equals("writePrefixes")) {
+                turtle += (String) method.invoke(this, entityCollection);
+            }
+        }
     
         return turtle;
     }

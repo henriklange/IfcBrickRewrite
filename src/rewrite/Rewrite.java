@@ -52,8 +52,8 @@ public class Rewrite {
         } else {
             System.err.println("File not found: '" + ifcFilename + "'");
         }
-        if(true){
-        //if(args.length == 3 && args[2].equals("halt")){
+        
+        if(args.length == 2 && args[1].equals("halt")){
             Scanner scanner = new Scanner(System.in);
             scanner.nextLine();
         }

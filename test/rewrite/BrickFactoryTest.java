@@ -1,5 +1,6 @@
 package rewrite;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
@@ -151,7 +152,7 @@ public class BrickFactoryTest {
      * The test only checks if all methods has been run.
      */
     @Test
-    public void testWriteBrick() {
+    public void testWriteBrick() throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
         System.out.println("writeBrick");
         BrickFactory instance = new BrickFactory();
         String expResult = "";
